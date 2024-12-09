@@ -1,6 +1,6 @@
 {
 let f =(a, b)=>
-  (b ??= a).url[0]=="c" || chrome.scripting.executeScript({
+  (b ??= a).url[0] == "c" || chrome.scripting.executeScript({
     target: (a = a?.frameId) ? {tabId: b.id, frameIds: [a]} : {tabId: b.id},
     world: "MAIN",
     func: async ()=> {
@@ -30,7 +30,7 @@ let f =(a, b)=>
           ((a = e[0]) >= 3600 ? (a / 3600 ^ 0) + "h-": "") +
           ((n = a % 3600 / 60 ^ 0) ? n + "m-": "") +
           ((n = a % 60 ^ 0) ? n + "s-" : "") +
-          ((n = (a % 60 - n)* 1000) ^ 0) + "ms.png",
+          ((n = (a % 60 - n) * 1000) ^ 0) + "ms.png",
         url: e.length < 3 ? e[1] : (
           n = await chrome.tabs.captureVisibleTab(b.windowId, {format: "png"}),
           (a = (await chrome.system.display.getInfo())[0].bounds).width * a.dpiX == (b = e[1]) * 96 && a.height * a.dpiY == e[2] * 96 ? n :
