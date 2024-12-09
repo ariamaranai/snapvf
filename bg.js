@@ -14,19 +14,13 @@ let f =(a, b)=>
           try {
             return [
               v.currentTime,
-              ((n = new OffscreenCanvas(v.videoWidth, v.videoHeight))
-                .getContext("bitmaprenderer")
-                  .transferFromImageBitmap(await createImageBitmap(v)),
+              ((n = new OffscreenCanvas(v.videoWidth, v.videoHeight)).getContext("bitmaprenderer").transferFromImageBitmap(await createImageBitmap(v)),
               URL.createObjectURL(await n.convertToBlob()))
             ]
           } catch (e) {
             document.fullscreenElement ?? setTimeout(()=> document.exitFullscreen(), 4000)
             await v.requestFullscreen({navigationUI: "hide"})
-            return [
-              v.currentTime,
-              v.videoWidth,
-              v.videoHeight
-            ]
+            return [v.currentTime,v.videoWidth,v.videoHeight]
           }
         }
       }
@@ -61,7 +55,6 @@ let f =(a, b)=>
       x && chrome.management.setEnabled(x, !0)
     }
   })
-
 chrome.action.onClicked.addListener(f)
 chrome.contextMenus.onClicked.addListener(f),
 chrome.commands.onCommand.addListener(f)
