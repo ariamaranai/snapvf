@@ -45,13 +45,7 @@ let f =(a, b)=>
     }
   })
 chrome.action.onClicked.addListener(f)
-chrome.contextMenus.onClicked.addListener(f),
+chrome.contextMenus.onClicked.addListener(f)
 chrome.commands.onCommand.addListener(f)
 }
-chrome.runtime.onInstalled.addListener(()=>
-  chrome.contextMenus.create({
-    id: "",
-    title: "Snap video frame",
-    contexts: ["page","video"]
-  })
-)
+chrome.runtime.onInstalled.addListener(()=> chrome.contextMenus.create({id: "", title: "Snap video frame", contexts: ["page","video"]}))
