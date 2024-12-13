@@ -1,54 +1,97 @@
-{
-let f =(a, b)=>
-  (b ??= a).url[0] == "c" || chrome.scripting.executeScript({
-    target: (a = a?.frameId) ? {tabId: b.id, frameIds: [a]} : {tabId: b.id},
-    world: "MAIN",
-    func: async ()=> {
-      let v = document.getElementsByTagName("video"), i = v.length
-      if (i) {
-        let n = 0, w = 0, t = 0
-        while (w < (t = v[--i].offsetWidth) && (w = t, n = i), i);
-        if ((v = v[n]).readyState) {
-          v.pause()
-          try {
-            (n = new OffscreenCanvas(v.videoWidth, v.videoHeight)).getContext("bitmaprenderer").transferFromImageBitmap(await createImageBitmap(v)),
-            w = URL.createObjectURL(await n.convertToBlob()),
-            setTimeout(()=> URL.revokeObjectURL(w), 127)
-            return [v.currentTime, w]
-          } catch (e) {
-            document.fullscreenElement ?? setTimeout(()=> document.exitFullscreen(), 4000)
-            await v.requestFullscreen({navigationUI: "hide"})
-            return [v.currentTime, v.videoWidth, v.videoHeight]
+(chrome => {
+  let run = (a, b) =>
+    (b ??= a).url[0] == "c" || chrome.scripting.executeScript({
+      target: (a = a?.frameId)
+        ? { tabId: b.id, frameIds: [a] }
+        : { tabId: b.id },
+      world: "MAIN",
+      func: async () => {
+        let video = document.getElementsByTagName("video");
+        let i = video.length;
+        if (i) {
+          let maxWidth = 0;
+          let width = 0;
+          let index = 0;
+          while (
+            width < (width = video[--i].offsetWidth) && (maxWidth = width, index = i),
+            i
+          );
+          if ((video = video[index]).readyState) {
+            video.pause();
+            let { currentTime, videoWidth, videoHeight } = video;
+            let cvs = new OffscreenCanvas(videoWidth, videoHeight);
+            let ctx = cvs.getContext("bitmaprenderer");
+            try {
+              ctx.transferFromImageBitmap(await createImageBitmap(video));
+              let url = URL.createObjectURL(await cvs.convertToBlob());
+              setTimeout(() => URL.revokeObjectURL(url), 127);
+              return [currentTime, url];
+            } catch (e) {
+              document.fullscreenElement ??
+                setTimeout(() => document.exitFullscreen(), 4000);
+              await video.requestFullscreen({ navigationUI: "hide" });
+              return [currentTime, videoWidth, videoHeight];
+            }
           }
         }
+      },
+    }, async results => {
+      if ((results &&= results[0].result)) {
+        let crxs = await chrome.management.getAll();
+        let crx = crxs.find(info => info.name == "file.format");
+        crx && crx.enabled
+          ? await chrome.management.setEnabled((crx = crx.id), !1)
+          : (crx = 0);
+        let t = results[0];
+        let n = ((t % 3600) / 60) ^ 0;
+        let filename =
+          b.title.replace(/[|?":/<>*\\]/g, "_") +
+          "-" +
+          (t >= 3600 ? ((t / 3600) ^ 0) + "h-" : "") +
+          (n ? n + "m-" : "") +
+          ((n = t % 60 ^ 0) ? n + "s-" : "") +
+          ((n = ((t % 60) - n) * 1000) ^ 0) +
+          "ms.png";
+        let url = results[1];
+        if (results.length == 3) {
+          let displayInfo = (await chrome.system.display.getInfo())[0].bounds;
+          let videoWidth = results[1];
+          let videoHeight = results[2];
+          url = await chrome.tabs.captureVisibleTab(b.windowId, { format: "png" });
+          if (!(
+            displayInfo.width * displayInfo.dpiX / 96 == videoWidth &&
+            displayInfo.height * displayInfo.dpiY / 96 == videoHeight
+          )) {
+            await new Promise(async resolve => {
+              let cvs = new OffscreenCanvas(videoWidth, videoHeight);
+              cvs.getContext("bitmaprenderer").transferFromImageBitmap(
+                await createImageBitmap(
+                  await (await fetch (url)).blob(),
+                  { 
+                    resizeWidth: videoWidth,
+                    resizeHeight: videoHeight,
+                    resizeQuality: "high"
+                  }
+                )
+              )
+              let reader = new FileReader;
+              reader.onload =()=> resolve(url = reader.result);
+              reader.readAsDataURL(await cvs.convertToBlob())
+            })
+          }
+        }
+        await chrome.downloads.download({filename, url});
+          crx && chrome.management.setEnabled(crx, !0);
       }
-    }
-  }, async e=> {
-    if (e &&= e[0].result) {
-      let n, k = await chrome.management.getAll(), m = k.find(v=> v.name == "file.format")
-      m && m.enabled ? await chrome.management.setEnabled(m = m.id, !1) : m = 0
-      await chrome.downloads.download({
-        filename: b.title.replace(/[|?":/<>*\\]/g,"_") + "-" +
-          ((k = e[0]) >= 3600 ? (k / 3600 ^ 0) + "h-": "") +
-          ((n = k % 3600 / 60 ^ 0) ? n + "m-": "") +
-          ((n = k % 60 ^ 0) ? n + "s-" : "") +
-          ((n = (k % 60 - n) * 1000) ^ 0) + "ms.png",
-        url: e.length < 3 ? e[1] : (
-          n = await chrome.tabs.captureVisibleTab(b.windowId, {format: "png"}),
-          (k = (await chrome.system.display.getInfo())[0].bounds).width * k.dpiX == (b = e[1]) * 96 && k.height * k.dpiY == e[2] * 96 ? n :
-          await new Promise(async p=> (
-            (k = new OffscreenCanvas(b, e[2])).getContext("bitmaprenderer").transferFromImageBitmap(
-              await createImageBitmap(await(await fetch(n)).blob(), {resizeWidth: b, resizeHeight: e[2], resizeQuality:"high"})),
-            (e = new FileReader).onload =()=> p(e.result),
-            e.readAsDataURL(await k.convertToBlob())
-          ))
-        )
-      })
-      m && chrome.management.setEnabled(m, !0)
-    }
-  })
-chrome.action.onClicked.addListener(f)
-chrome.contextMenus.onClicked.addListener(f)
-chrome.commands.onCommand.addListener(f)
-}
-chrome.runtime.onInstalled.addListener(()=> chrome.contextMenus.create({id: "", title: "Snap video frame", contexts: ["page","video"]}))
+    });
+  chrome.action.onClicked.addListener(run);
+  chrome.contextMenus.onClicked.addListener(run);
+  chrome.commands.onCommand.addListener(run);
+  chrome.runtime.onInstalled.addListener(() =>
+    chrome.contextMenus.create({
+      id: "",
+      title: "Snap video frame",
+      contexts: ["page", "video"],
+    })
+  );
+})(chrome)
