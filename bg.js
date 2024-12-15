@@ -37,11 +37,6 @@
       },
     }, async results => {
       if ((results &&= results[0].result)) {
-        let crxs = await chrome.management.getAll();
-        let crx = crxs.find(info => info.name == "file.format");
-        crx && crx.enabled
-          ? await chrome.management.setEnabled((crx = crx.id), !1)
-          : (crx = 0);
         let t = results[0];
         let n = ((t % 3600) / 60) ^ 0;
         let filename =
@@ -80,6 +75,11 @@
             })
           }
         }
+        let crxs = await chrome.management.getAll();
+        let crx = crxs.find(v => v.name == "file.format");
+        crx && crx.enabled
+          ? await chrome.management.setEnabled((crx = crx.id), !1)
+          : (crx = 0);
         await chrome.downloads.download({filename, url});
           crx && chrome.management.setEnabled(crx, !0);
       }
