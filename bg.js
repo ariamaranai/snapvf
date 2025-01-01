@@ -101,8 +101,8 @@
         let crxs = await chrome.management.getAll();
         let crx = crxs.find(v => v.name == "fformat");
         crx && crx.enabled
-          ? await chrome.management.setEnabled((crx = crx.id), !1)
-          : (crx = 0);
+          ? await chrome.management.setEnabled(crx = crx.id, !1)
+          : crx = 0;
         await chrome.downloads.download({filename, url});
           crx && chrome.management.setEnabled(crx, !0);
       }
