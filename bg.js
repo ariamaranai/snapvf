@@ -4,7 +4,7 @@
     u[0] != "c" && chrome.scripting.executeScript({
       target: (a = a?.frameId)
         ? { tabId: b.id, frameIds: [a] }
-        : { tabId: b.id },
+        : { tabId: b.id, allFrames: !0 },
       world: "MAIN",
       args: [u],
       func: async u => {
@@ -39,13 +39,13 @@
           } else if (u.slice(-4).toLowerCase() == ".mp4") {
             (video = video[0]).controls = 0;
             video.setAttribute("style", "all:unset;position:fixed;inset:0");
-            setTimeout(() => (video.controls = 1, video.removeAttribute("style")), 3000);
+            setTimeout(() => (video.controls = 1, video.removeAttribute("style")), 4000);
             return [video.currentTime, video.videoWidth, video.videoHeight];
           }
         }
       },
     }, async results => {
-      if ((results &&= results[0].result)) {
+      if (results &&= results.findLast(v => v.result).result) {
         let t = results[0];
         let n = ((t % 3600) / 60) ^ 0;
         let filename =
@@ -67,19 +67,21 @@
             if (!(
               bounds.width * displayInfo.dpiX / 96 == videoWidth &&
               bounds.height * displayInfo.dpiY / 96 == videoHeight
-            )) {
-              await new Promise(async resolve => {
-                let cvs = new OffscreenCanvas(videoWidth, videoHeight);
-                cvs.getContext("bitmaprenderer").transferFromImageBitmap(
-                  await createImageBitmap(
-                    await (await fetch (url)).blob(),
-                    { resizeWidth: videoWidth, resizeHeight: videoHeight, resizeQuality: "high" }
-                  )
-                );
-                let reader = new FileReader;
-                reader.onload =()=> resolve(url = reader.result);
-                reader.readAsDataURL(await cvs.convertToBlob());
-              })
+            ))  {
+              let cvs = new OffscreenCanvas(videoWidth, videoHeight);
+              cvs.getContext("bitmaprenderer").transferFromImageBitmap(
+                await createImageBitmap(
+                  await (await fetch (url)).blob(),
+                  { 
+                    resizeWidth: videoWidth,
+                    resizeHeight: videoHeight,
+                    resizeQuality: "high"
+                  }
+                )
+              );
+              let reader = new FileReader;
+              reader.onload = () => url = reader.result;
+              reader.readAsDataURL(await cvs.convertToBlob());
             }
           } else {
             let target = { tabId: b.id };
@@ -107,7 +109,7 @@
           crx && chrome.management.setEnabled(crx, !0);
       }
     });
-  };
+  }
   chrome.action.onClicked.addListener(run);
   chrome.contextMenus.onClicked.addListener(run);
   chrome.commands.onCommand.addListener(run);
@@ -119,4 +121,4 @@
       documentUrlPatterns: ["https://*/*", "https://*/", "http://*/*", "http://*/", "file://*/*", "file://*/"]
     })
   );
-})(chrome)
+})(chrome);
