@@ -43,7 +43,7 @@
             return [video.currentTime, video.videoWidth, video.videoHeight];
           }
         }
-      },
+      }
     }, async results => {
       if (results &&= results.findLast(v => v.result).result) {
         let t = results[0];
