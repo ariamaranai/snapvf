@@ -1,17 +1,15 @@
 (chrome => {
   let run = (a, b) => {
-    let u = (b ??= a).url;
-    u[0] != "c" && chrome.scripting.executeScript({
+    (b ??= a).url[0] != "c" && chrome.scripting.executeScript({
       target: (a = a?.frameId)
         ? { tabId: b.id, frameIds: [a] }
         : { tabId: b.id, allFrames: !0 },
       world: "MAIN",
-      args: [u],
-      func: async u => {
+      func: async () => {
         let video = document.body.getElementsByTagName("video");
         let i = video.length;
         if (i) {
-          if (u[0] != "f") {
+          if (document.head.childElementCount != 1) {
             let maxWidth = 0;
             let width = 0;
             let index = 0;
@@ -36,11 +34,11 @@
                 return [currentTime, videoWidth, videoHeight];
               }
             }
-          } else if (u.slice(-4).toLowerCase() == ".mp4") {
+          } else {
             (video = video[0]).controls = 0;
             video.setAttribute("style", "all:unset;position:fixed;inset:0");
             setTimeout(() => (video.controls = 1, video.removeAttribute("style")), 4000);
-            return [video.currentTime, video.videoWidth, video.videoHeight];
+            return [video.currentTime, video.videoWidth, video.videoHeight, 0];
           }
         }
       }
@@ -57,12 +55,13 @@
           ((n = ((t % 60) - n) * 1000) ^ 0) +
           "ms.png";
         let url = results[1];
-        if (results.length == 3) {
+        let len = results.length;
+        if (len > 2) {
           let displayInfo = (await chrome.system.display.getInfo())[0];
           let bounds = displayInfo.bounds;
           let videoWidth = results[1];
           let videoHeight = results[2];
-          if (u[0] != "f") {
+          if (len < 4) {
             url = await chrome.tabs.captureVisibleTab(b.windowId, { format: "png" });
             if (!(
               bounds.width * displayInfo.dpiX / 96 == videoWidth &&
