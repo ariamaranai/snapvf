@@ -1,4 +1,4 @@
-(chrome => {
+{
   let run = (a, b) => {
     (b ??= a).url[0] != "c" && chrome.scripting.executeScript({
       target: (a = a?.frameId)
@@ -112,12 +112,12 @@
   chrome.action.onClicked.addListener(run);
   chrome.contextMenus.onClicked.addListener(run);
   chrome.commands.onCommand.addListener(run);
-  chrome.runtime.onInstalled.addListener(() =>
-    chrome.contextMenus.create({
-      id: "",
-      title: "Snap video frame",
-      contexts: ["page", "video"],
-      documentUrlPatterns: ["https://*/*", "https://*/", "http://*/*", "http://*/", "file://*/*", "file://*/"]
-    })
-  );
-})(chrome);
+}
+chrome.runtime.onInstalled.addListener(() =>
+  chrome.contextMenus.create({
+    id: "",
+    title: "Snap video frame",
+    contexts: ["page", "video"],
+    documentUrlPatterns: ["https://*/*", "https://*/", "http://*/*", "http://*/", "file://*/*", "file://*/"]
+  })
+);
