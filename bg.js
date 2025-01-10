@@ -39,7 +39,7 @@
           } else {
             (video = video[0]).controls = 0;
             video.setAttribute("style", "all:unset;position:fixed;inset:0");
-            setTimeout(() => (video.controls = 1, video.removeAttribute("style")), 4000);
+            setTimeout(() => (video.controls = 1, video.style = ""), 4000);
             return [video.currentTime, video.videoWidth, video.videoHeight, 0];
           }
         }
