@@ -10,13 +10,15 @@
         let i = video.length;
         if (i) {
           if (document.head.childElementCount != 1) {
-            let maxWidth = 0;
-            let width = 0;
             let index = 0;
-            while (
-              width < (width = video[--i].offsetWidth) && (maxWidth = width, index = i),
-              i
-            );
+            if (i > 1) {
+              let maxWidth = 0;
+              let width = 0;
+              while (
+                maxWidth < (width = video[--i].offsetWidth) && (maxWidth = width, index = i),
+                i
+              );
+            }
             if ((video = video[index]).readyState) {
               video.pause();
               let { currentTime, videoWidth, videoHeight } = video;
