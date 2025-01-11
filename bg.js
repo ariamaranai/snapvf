@@ -6,10 +6,11 @@
         : { tabId: b.id, allFrames: !0 },
       world: "MAIN",
       func: async () => {
-        let video = document.body.getElementsByTagName("video");
+        let d = document;
+        let video = d.body.getElementsByTagName("video");
         let i = video.length;
         if (i) {
-          if (document.head.childElementCount != 1) {
+          if (d.head.childElementCount != 1) {
             let index = 0;
             if (i > 1) {
               let maxWidth = 0;
@@ -30,8 +31,8 @@
                 setTimeout(() => URL.revokeObjectURL(url), 127);
                 return [currentTime, url];
               } catch (e) {
-                document.fullscreenElement ??
-                  setTimeout(() => document.exitFullscreen(), 4000);
+                d.fullscreenElement ??
+                  setTimeout(() => d.exitFullscreen(), 4000);
                 await video.requestFullscreen({ navigationUI: "hide" });
                 return [currentTime, videoWidth, videoHeight];
               }
