@@ -50,6 +50,7 @@
         let t = results[0];
         let n = ((t % 3600) / 60) ^ 0;
         let filename =
+          "snapvf/" +
           b.title.replace(/[|?":/<>*\\]/g, "_") +
           "-" +
           (t >= 3600 ? ((t / 3600) ^ 0) + "h-" : "") +
@@ -107,7 +108,7 @@
         crx && crx.enabled
           ? await chrome.management.setEnabled(crx = crx.id, !1)
           : crx = 0;
-        await chrome.downloads.download({ filename, url, saveAs: !0 });
+        await chrome.downloads.download({ filename, url, saveAs: !1 });
           crx && chrome.management.setEnabled(crx, !0);
       }
     });
