@@ -15,6 +15,7 @@
     }
   },
   "permissions": [
+    "contentSettings",
     "contextMenus",
     "debugger",
     "downloads",
