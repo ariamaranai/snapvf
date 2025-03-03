@@ -3,10 +3,11 @@
     let url = (b ??= a).url;
     if (url[0] != "c") {
       try {
+        let tabId = b.id;
         let results = await chrome.scripting.executeScript({
           target: (a = a?.frameId)
-            ? { tabId: b.id, frameIds: [a] }
-            : { tabId: b.id, allFrames: !0 },
+            ? { tabId, frameIds: [a] }
+            : { tabId, allFrames: !0 },
           func: async () => {
             let d = document;
             let video = d.body.getElementsByTagName("video");
@@ -33,8 +34,7 @@
                     setTimeout(() => URL.revokeObjectURL(url), 127);
                     return [currentTime, url];
                   } catch (e) {
-                    d.fullscreenElement ??
-                      setTimeout(() => d.exitFullscreen(), 4000);
+                    d.fullscreenElement ?? setTimeout(() => d.exitFullscreen(), 4000);
                     await video.requestFullscreen({ navigationUI: "hide" });
                     return [currentTime, videoWidth, videoHeight];
                   }
@@ -52,7 +52,6 @@
           let t = results[0];
           let n = ((t % 3600) / 60) ^ 0;
           let filename =
-            "snapvf/" +
             b.title.replace(/[|?":/<>*\\]/g, "_") +
             "-" +
             (t >= 3600 ? ((t / 3600) ^ 0) + "h-" : "") +
@@ -89,7 +88,7 @@
                 reader.readAsDataURL(await cvs.convertToBlob());
               }
             } else {
-              let target = { tabId: b.id };
+              let target = { tabId };
               chrome.debugger.attach(target, "1.3");
               url = "data:image/png;base64," +
               (await chrome.debugger.sendCommand(target, "Page.captureScreenshot", {
@@ -110,7 +109,7 @@
           crx && crx.enabled
             ? await chrome.management.setEnabled(crx = crx.id, !1)
             : crx = 0;
-          await chrome.downloads.download({ filename, url, saveAs: !1 });
+          await chrome.downloads.download({ filename, url });
           crx && chrome.management.setEnabled(crx, !0);
         }
       } catch (e) {}
