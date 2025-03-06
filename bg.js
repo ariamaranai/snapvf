@@ -1,85 +1,124 @@
 {
-  let open = async (_q, id, index) => {
-    let q = _q.trim();
-    let props = {
-      url: id != 1
-        ? (
-          q = q.replaceAll(" ", "+"),
-          id == 2
-          ? "https://www.jbis.or.jp/horse/result/?sid=horse&keyword=" + q
-            : (q = q.normalize("NFD").replace(/[^a-zA-Z+-]/g, ""), id == 3)
-              ? "https://sporthorse-data.com/search/pedigree?keys=" + q
-              : (id = id ? "https://www.allbreedpedigree.com/" : "https://www.pedigreequery.com/" ) +
-              ((await fetch(id + q + "2", { method: "HEAD" })).status == 200
-                  ? "index.php?query_type=check&search_bar=horse&h=" + q + "&g=5&inbred=Standard"
-                  : q.toLowerCase())
-        )
-        : (()=> {
-            let url = "https://db.netkeiba.com/?pid=horse_list&word=";
-            let i = 0;
-            while (i < q.length) {
-              let charCode = q.charCodeAt(i);
-              url +=
-                charCode == 32
-                ? "+"
-                : charCode < 123
-                ? q[i]
-                : charCode > 12448 && charCode < 12535
-                ? "%a5%" + (charCode - 12288).toString(16)
-                : charCode > 12352 && charCode < 12436
-                ? "%a4%" + (charCode - 12192).toString(16)
-                : charCode == 12540
-                ? "%a1%bc"
-                : charCode == 8545
-                ? "II"
-                : "";
+  let run = async (a, b) => {
+    try {
+      let tabId = (b ??= a).id;
+      let results = await chrome.scripting.executeScript({
+        target: (a = a?.frameId) ? { tabId, frameIds: [a] } : { tabId, allFrames: !0 },
+        func: async () => {
+          let d = document;
+          let video = d.body.getElementsByTagName("video");
+          let i = video.length;
+          if (i) {
+            if (d.head.childElementCount != 1) {
+              let index = 0;
+              if (i > 1) {
+                let maxWidth = 0;
+                let width = 0;
+                while (
+                  maxWidth < (width = video[--i].offsetWidth) && (maxWidth = width, index = i),
+                  i
+                );
               }
-            return url;
-          })()
-    };
-    chrome.tabs[index ? (props.index = index, "create") : "update"](props);
+              if ((video = video[index]).readyState) {
+                video.pause();
+                let { currentTime, videoWidth, videoHeight } = video;
+                let cvs = new OffscreenCanvas(videoWidth, videoHeight);
+                let ctx = cvs.getContext("bitmaprenderer");
+                try {
+                  ctx.transferFromImageBitmap(await createImageBitmap(video));
+                  let url = URL.createObjectURL(await cvs.convertToBlob());
+                  setTimeout(() => URL.revokeObjectURL(url), 127);
+                  return [currentTime, url];
+                } catch (e) {
+                  d.fullscreenElement ?? setTimeout(() => d.exitFullscreen(), 4000);
+                  await video.requestFullscreen({ navigationUI: "hide" });
+                  return [currentTime, videoWidth, videoHeight];
+                }
+              }
+            } else {
+              (video = video[0]).controls = 0;
+              video.setAttribute("style", "all:unset;position:fixed;inset:0");
+              setTimeout(() => (video.controls = 1, video.style = ""), 4000);
+              return [video.currentTime, video.videoWidth, video.videoHeight, 0];
+            }
+          }
+        }
+      });
+      if (results &&= results.findLast(v => v.result).result) {
+        let t = results[0];
+        let n = t % 3600 / 60 ^ 0;
+        let filename =
+          b.title.replace(/[|?":/<>*\\]/g, "_") +
+          "-" +
+          (t >= 3600 ? (t / 3600 ^ 0) + "h-" : "") +
+          (n ? n + "m-" : "") +
+          ((n = t % 60 ^ 0) ? n + "s-" : "") +
+          ((((t % 60) - n) * 1000) ^ 0) +
+          "ms.png";
+        let url = results[1];
+        let len = results.length;
+        if (len > 2) {
+          let displayInfo = (await chrome.system.display.getInfo())[0];
+          let bounds = displayInfo.bounds;
+          let videoWidth = results[1];
+          let videoHeight = results[2];
+          if (len < 4) {
+            url = await chrome.tabs.captureVisibleTab(b.windowId, { format: "png" });
+            if (!(
+              bounds.width * displayInfo.dpiX / 96 == videoWidth &&
+              bounds.height * displayInfo.dpiY / 96 == videoHeight
+            ))  {
+              let cvs = new OffscreenCanvas(videoWidth, videoHeight);
+              cvs.getContext("bitmaprenderer").transferFromImageBitmap(
+                await createImageBitmap(
+                  await (await fetch (url)).blob(),
+                  { 
+                    resizeWidth: videoWidth,
+                    resizeHeight: videoHeight,
+                    resizeQuality: "high"
+                  }
+                )
+              );
+              let reader = new FileReader;
+              reader.onload = () => url = reader.result;
+              reader.readAsDataURL(await cvs.convertToBlob());
+            }
+          } else {
+            let target = { tabId };
+            chrome.debugger.attach(target, "1.3");
+            url = "data:image/png;base64," +
+            (await chrome.debugger.sendCommand(target, "Page.captureScreenshot", {
+                captureBeyondViewport: !0,
+                clip: {
+                  x: 0,
+                  y: 0,
+                  width: videoWidth,
+                  height: videoHeight,
+                  scale: displayInfo.dpiY / 96
+                }
+              })).data;
+            chrome.debugger.detach(target);
+          }
+        }
+        let crxs = await chrome.management.getAll();
+        let crx = crxs.find(v => v.name == "fformat");
+        crx && crx.enabled
+          ? await chrome.management.setEnabled(crx = crx.id, !1)
+          : crx = 0;
+        await chrome.downloads.download({ filename, url });
+        crx && chrome.management.setEnabled(crx, !0);
+      }
+    } catch (e) {}
   }
-  let searchFromContextMenus = async (info, tab) => navigator.onLine && open(
-    info.selectionText,
-    +info.menuItemId,
-    tab.index + 1 || (await chrome.tabs.query({ active: !0, currentWindow: !0 }))[0].index + 1
-  );
-  let searchFromOmnibox = q => {
-    if (navigator.onLine) {
-      let id = 0;
-      open(
-        q.slice(0,
-            q.slice(-11) == " - netkeiba"
-          ? (id = 1, -11)
-          : q.slice(-7) == " - jbis"
-          ? (id = 2, -7)
-          : q.slice(-13) == " - sporthorse"
-          ? (id = 3, -13)
-          : q.slice(-14) == " - allpedigree"
-          ? (id = 4, -14)
-          : q.length
-        ),
-        id
-      )
-    }
-  }
-  chrome.contextMenus.onClicked.addListener(searchFromContextMenus);
-  chrome.omnibox.onInputEntered.addListener(searchFromOmnibox);
+  chrome.action.onClicked.addListener(run);
+  chrome.contextMenus.onClicked.addListener(run);
+  chrome.commands.onCommand.addListener(run);
 }
-chrome.omnibox.onInputChanged.addListener((q, suggest) => (
-  chrome.omnibox.setDefaultSuggestion({
-    description: q + " - pedigreequery"
-  }),
-  suggest([" - netkeiba", " - jbis", " - sporthorse", " - allpedigree"].map(v => {
-    let s = q + v;
-    return { content: s, description: s };
-  }))
-));
-chrome.runtime.onInstalled.addListener(() => {
-  for (let i = 0; i < 5; ++i)
-    chrome.contextMenus.create({
-      id: i + "",
-      title: ["%s - pedigreequery", "%s - netkeiba", "%s - jbis", "%s - sporthorse", "%s - allpedigree"][i],
-      contexts: ["selection"]
-    });
-});
+chrome.runtime.onInstalled.addListener(() =>
+  chrome.contextMenus.create({
+    id: "",
+    title: "Snap video frame",
+    contexts: ["page", "video"],
+    documentUrlPatterns: ["https://*/*", "https://*/", "http://*/*", "http://*/", "file://*/*", "file://*/"]
+  })
+);
