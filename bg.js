@@ -50,14 +50,14 @@
         });
         if (results &&= results.findLast(v => v.result).result) {
           let t = results[0];
-          let n = ((t % 3600) / 60) ^ 0;
+          let n = (t % 3600 / 60 - .5).toFixed();
           let filename =
             b.title.replace(/[|?":/<>*\\]/g, "_") +
             "-" +
-            (t >= 3600 ? ((t / 3600) ^ 0) + "h-" : "") +
-            (n ? n + "m-" : "") +
+            (t >= 3600 ? (t / 3600 - .5).toFixed() + "h-" : "") +
+            (n != "0" ? n + "m-" : "") +
             ((n = t % 60 ^ 0) ? n + "s-" : "") +
-            ((n = ((t % 60) - n) * 1000) ^ 0) +
+            (((t % 60 - n) * 1000) - .5).toFixed() +
             "ms.png";
           let url = results[1];
           let len = results.length;
