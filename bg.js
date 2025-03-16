@@ -103,15 +103,14 @@
                 await video.requestFullscreen({ navigationUI: "hide" });
                 await chrome.runtime.sendMessage([currentTime, videoWidth, videoHeight], () => (
                   d.fullScreenElement ?? d.exitFullscreen()
-                ))
+                ));
               }
             }
           } else (
             (video = video[0]).pause(),
-            video.controls = 0,
             video.setAttribute("style", "all:unset;position:fixed;inset:0"),
-            await chrome.runtime.sendMessage([video.currentTime, video.videoWidth, video.videoHeight, 0], () => (
-              video.controls = 1, video.style = ""
+            await chrome.runtime.sendMessage([video.currentTime, video.videoWidth, video.videoHeight, video.controls = 0], () => (
+              video.controls = video.style = ""
             ))
           )
         }
