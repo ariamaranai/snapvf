@@ -100,10 +100,9 @@
                 let url = URL.createObjectURL(await cvs.convertToBlob());
                 await chrome.runtime.sendMessage([currentTime, url], URL.revokeObjectURL.bind(null, url));
               } catch (e) {
+                let exitHandler = d.fullscreenElement || (() => d.exitFullscreen());
                 await video.requestFullscreen({ navigationUI: "hide" });
-                await chrome.runtime.sendMessage([currentTime, videoWidth, videoHeight], () => (
-                  d.fullScreenElement ?? d.exitFullscreen()
-                ));
+                await chrome.runtime.sendMessage([currentTime, videoWidth, videoHeight], exitHandler);
               }
             }
           } else (
