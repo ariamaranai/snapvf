@@ -19,7 +19,6 @@
       crx && crx.enabled
         ? await chrome.management.setEnabled(crx = crx.id, !1)
         : crx = 0;
-
       if (len > 2) {
         let displayInfo = (await chrome.system.display.getInfo())[0];
         let bounds = displayInfo.bounds;
@@ -125,6 +124,7 @@ chrome.runtime.onInstalled.addListener(() =>
   chrome.contextMenus.create({
     id: "",
     title: "Snap video frame",
-    contexts: ["page", "video"]
+    contexts: ["page", "video"],
+    documentUrlPatterns: ["https://*/*", "https://*/", "http://*/*", "http://*/", "file://*/*", "file://*/"]
   })
 );
