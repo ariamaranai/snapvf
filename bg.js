@@ -1,24 +1,14 @@
 {
   let title;
   let windowId;
-  chrome.runtime.onMessage.addListener((m, s, r) => {
-    let t = m[0];
-    let n = t % 3600 / 60 ^ 0;
-    let filename =
-      title.replace(/[|?":/<>*\\]/g, "_") +
-      "-" +
-      (t >= 3600 ? (t / 3600 ^ 0) + "h-" : "") +
-      (n ? n + "m-" : "") +
-      ((n = t % 60 ^ 0) ? n + "s-" : "") +
-      ((((t % 60) - n) * 1000) ^ 0) +
-      "ms.png";
-    let url = m[1];
-    let len = m.length;
-    chrome.management.getAll(async crxs => {
+  chrome.runtime.onMessage.addListener((m, s, r) =>
+    !!chrome.management.getAll(async crxs => {
       let crx = crxs.find(v => v.name == "fformat");
       crx && crx.enabled
         ? await chrome.management.setEnabled(crx = crx.id, !1)
         : crx = 0;
+      let url = m[1];
+      let len = m.length;
       if (len > 2) {
         let displayInfo = (await chrome.system.display.getInfo())[0];
         let bounds = displayInfo.bounds;
@@ -49,7 +39,7 @@
           let target = { tabId: s.tab.id };
           chrome.debugger.attach(target, "1.3");
           url = "data:image/png;base64," +
-          (await chrome.debugger.sendCommand(target, "Page.captureScreenshot", {
+            (await chrome.debugger.sendCommand(target, "Page.captureScreenshot", {
               captureBeyondViewport: !0,
               clip: {
                 x: 0,
@@ -62,12 +52,23 @@
           chrome.debugger.detach(target);
         }
       }
-      await chrome.downloads.download({ filename, url });
+      let t = m[0];
+      let n = t % 3600 / 60 ^ 0;
+      await chrome.downloads.download({
+        filename:
+          title.replace(/[|?":/<>*\\]/g, "_") +
+          "-" +
+          (t >= 3600 ? (t / 3600 ^ 0) + "h-" : "") +
+          (n ? n + "m-" : "") +
+          ((n = t % 60 ^ 0) ? n + "s-" : "") +
+          ((((t % 60) - n) * 1000) ^ 0) +
+          "ms.png",
+        url
+      });
       crx && chrome.management.setEnabled(crx, !0);
       r();
-    });
-    return !0
-  });
+    })
+  );
   let run = (a, b) => {
     let tabId = (b ??= a).id;
     title = b.title;
