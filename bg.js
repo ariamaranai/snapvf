@@ -33,6 +33,7 @@
             let videoWidth = m[1];
             let videoHeight = m[2];
             if (len < 4) {
+              debugger;
               chrome.tabs.captureVisibleTab(windowId, { format: "png" }, url => {
                 if (!(
                   bounds.width * displayInfo.dpiX / 96 == videoWidth &&
@@ -52,7 +53,7 @@
                           cvs.getContext("bitmaprenderer").transferFromImageBitmap(r),
                           cvs.convertToBlob()
                         ))
-                          .then(reader.readAsDataURL);
+                          .then(reader.readAsDataURL.bind(reader));
                 } else
                   download(url);
               });
@@ -114,7 +115,7 @@
                 port.postMessage([currentTime, url]);
               } catch (e) {
                 port.onDisconnect.addListener(d.fullscreenElement || (() => d.exitFullscreen()));
-                await video.requestFullscreen({ navigationUI: "hide" });
+                video.requestFullscreen({ navigationUI: "hide" });
                 port.postMessage([currentTime, videoWidth, videoHeight]);
               }
             }
@@ -126,7 +127,7 @@
           );
         }
       }
-    });
+    }).catch(() => 0);
   }
   chrome.action.onClicked.addListener(run);
   chrome.contextMenus.onClicked.addListener(run);
