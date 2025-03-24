@@ -19,8 +19,7 @@
     "debugger",
     "downloads",
     "management",
-    "scripting",
-    "system.display"
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"
