@@ -68,19 +68,16 @@
                 i
               );
             }
-            if ((video = video[index]).readyState) {
-              video.pause();
-              let { currentTime, videoWidth, videoHeight } = video;
-              let cvs = new OffscreenCanvas(videoWidth, videoHeight);
-              let ctx = cvs.getContext("bitmaprenderer");
-              try {
-                ctx.transferFromImageBitmap(await createImageBitmap(video));
-                let url = URL.createObjectURL(await cvs.convertToBlob());
-                port.onDisconnect.addListener(() => URL.revokeObjectURL(url));
-                port.postMessage([currentTime, url]);
-                return;
-              } catch (e) {}
-            }
+            (video = video[index]).pause();
+            let cvs = new OffscreenCanvas(video.videoWidth, video.videoHeight);
+            let ctx = cvs.getContext("bitmaprenderer");
+            try {
+              ctx.transferFromImageBitmap(await createImageBitmap(video));
+              let url = URL.createObjectURL(await cvs.convertToBlob());
+              port.onDisconnect.addListener(() => URL.revokeObjectURL(url));
+              port.postMessage([video.currentTime, url]);
+              return;
+            } catch (e) {}
           } else
             (video = video[0]).pause();
           d = video.controls;
