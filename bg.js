@@ -5,9 +5,9 @@
   chrome.runtime.onConnect.addListener(port =>
     port.onMessage.addListener(m =>
       chrome.management.getAll(crx => {
-        let download = url => {
-          let t = m[0];
-          let n = Math.floor(t % 3600 / 60);
+        let t = m[0];
+        let n = Math.floor(t % 3600 / 60);
+        let download = url => (
           chrome.downloads.download({
             filename:
               title.replace(/[|?":/<>*\\]/g, "_") +
@@ -22,62 +22,27 @@
               chrome.management.setEnabled(crx = crx.id, !1),
               () => (chrome.management.setEnabled(crx, !0))
             )
+          ),
+          port.disconnect()
+        )
+        m.length < 4
+          ? download(m[1])
+          : (
+            chrome.debugger.attach(tabId = { tabId: tabId }, "1.3"),
+            chrome.debugger.sendCommand(tabId, "Page.captureScreenshot", {
+              captureBeyondViewport: !0,
+              clip: {
+                x: 0,
+                y: 0,
+                width: m[1],
+                height: m[2],
+                scale: m[3]
+              }
+            }, e => (
+              chrome.debugger.detach(tabId),
+              download("data:image/png;base64," + e.data)
+            ))
           )
-          port.disconnect();
-        }
-        let len = m.length;
-        if (len > 2) {
-          chrome.system.display.getInfo(infos => {
-            let displayInfo = infos[0];
-            let bounds = displayInfo.bounds;
-            let videoWidth = m[1];
-            let videoHeight = m[2];
-            if (len < 4) {
-              debugger;
-              chrome.tabs.captureVisibleTab(windowId, { format: "png" }, url => {
-                if (!(
-                  bounds.width * displayInfo.dpiX / 96 == videoWidth &&
-                  bounds.height * displayInfo.dpiY / 96 == videoHeight
-                ))  {
-                  let cvs = new OffscreenCanvas(videoWidth, videoHeight);
-                  let reader = new FileReader;
-                  reader.onload = () => download(reader.result);
-                  fetch (url)
-                    .then(r => r.blob())
-                      .then(r => createImageBitmap(r, {
-                        resizeWidth: videoWidth,
-                        resizeHeight: videoHeight,
-                        resizeQuality: "high"
-                      }))
-                        .then(r => (
-                          cvs.getContext("bitmaprenderer").transferFromImageBitmap(r),
-                          cvs.convertToBlob()
-                        ))
-                          .then(reader.readAsDataURL.bind(reader));
-                } else
-                  download(url);
-              });
-            } else {
-              let target = { tabId };
-              chrome.debugger.attach(target, "1.3");
-              chrome.debugger.sendCommand(target, "Page.captureScreenshot", {
-                  captureBeyondViewport: !0,
-                  clip: {
-                    x: 0,
-                    y: 0,
-                    width: videoWidth,
-                    height: videoHeight,
-                    scale: displayInfo.dpiY / 96
-                  }
-                }, e => (
-                  chrome.debugger.detach(target),
-                  download("data:image/png;base64," + e.data)
-                )
-              );
-            }
-          })
-        } else
-          download(m[1]);
       })
     )
   );
@@ -113,18 +78,17 @@
                 let url = URL.createObjectURL(await cvs.convertToBlob());
                 port.onDisconnect.addListener(() => URL.revokeObjectURL(url));
                 port.postMessage([currentTime, url]);
-              } catch (e) {
-                port.onDisconnect.addListener(d.fullscreenElement || (() => d.exitFullscreen()));
-                video.requestFullscreen({ navigationUI: "hide" });
-                port.postMessage([currentTime, videoWidth, videoHeight]);
-              }
+                return;
+              } catch (e) {}
             }
-          } else (
-            (video = video[0]).pause(),
-            video.setAttribute("style", "all:unset;position:fixed;inset:0"),
-            port.onDisconnect.addListener(() => (video.controls = video.style = "")),
-            port.postMessage([video.currentTime, video.videoWidth, video.videoHeight, video.controls = 0])
-          );
+          } else
+            (video = video[0]).pause();
+          d = video.controls;
+          i = video.getAttribute("style");
+          video.controls = 0;
+          video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
+          port.onDisconnect.addListener(() => (video.controls = d, video.style = i));
+          port.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
         }
       }
     }).catch(() => 0);
