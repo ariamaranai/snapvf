@@ -24,7 +24,7 @@
             )
           ),
           port.disconnect()
-        )
+        );
         m.length < 4
           ? download(m[1])
           : (
@@ -82,8 +82,7 @@
             (video = video[0]).pause();
           d = video.controls;
           i = video.getAttribute("style");
-          video.controls = 0;
-          video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
+          video.controls = video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
           port.onDisconnect.addListener(() => (video.controls = d, video.style = i));
           port.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
         }
