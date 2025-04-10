@@ -2,7 +2,7 @@
   let tabId;
   let title;
   let windowId;
-  chrome.runtime.onConnect.addListener(port =>
+  chrome.runtime.onUserScriptConnect.addListener(port =>
     port.onMessage.addListener(m =>
       chrome.management.getAll(crx => {
         let t = m[0];
@@ -50,54 +50,59 @@
     tabId = (b ??= a).id;
     title = b.title;
     windowId = b.windowId;
-    chrome.scripting.executeScript({
+    chrome.userScripts.execute({
       target: (a = a?.frameId) ? { tabId, frameIds: [a] } : { tabId, allFrames: !0 },
-      func: async () => {
-        let d = document;
-        let video = d.body.getElementsByTagName("video");
-        let i = video.length;
-        if (i) {
-          let port = await chrome.runtime.connect();
-          if (d.head.childElementCount != 1) {
-            let index = 0;
-            if (i > 1) {
-              let maxWidth = 0;
-              let width = 0;
-              while (
-                maxWidth < (width = video[--i].offsetWidth) && (maxWidth = width, index = i),
-                i
-              );
-            }
-            (video = video[index]).pause();
-            let cvs = new OffscreenCanvas(video.videoWidth, video.videoHeight);
-            let ctx = cvs.getContext("bitmaprenderer");
-            try {
-              ctx.transferFromImageBitmap(await createImageBitmap(video));
-              let url = URL.createObjectURL(await cvs.convertToBlob());
-              port.onDisconnect.addListener(() => URL.revokeObjectURL(url));
-              port.postMessage([video.currentTime, url]);
-              return;
-            } catch (e) {}
-          } else
-            (video = video[0]).pause();
-          d = video.controls;
-          i = video.getAttribute("style");
-          video.controls = video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
-          port.onDisconnect.addListener(() => (video.controls = d, video.style = i));
-          port.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
-        }
+      js: [{ code:
+`(async () => {
+  let d = document;
+  let video = d.body.getElementsByTagName("video");
+  let i = video.length;
+  if (i) {
+    let port = await chrome.runtime.connect();
+    if (d.head.childElementCount != 1) {
+      let index = 0;
+      if (i > 1) {
+        let maxWidth = 0;
+        let width = 0;
+        while (
+          maxWidth < (width = video[--i].offsetWidth) && (maxWidth = width, index = i),
+          i
+        );
       }
+      (video = video[index]).pause();
+      let cvs = new OffscreenCanvas(video.videoWidth, video.videoHeight);
+      let ctx = cvs.getContext("bitmaprenderer");
+      try {
+        ctx.transferFromImageBitmap(await createImageBitmap(video));
+        let url = URL.createObjectURL(await cvs.convertToBlob());
+        port.onDisconnect.addListener(() => URL.revokeObjectURL(url));
+        port.postMessage([video.currentTime, url]);
+        return;
+      } catch (e) {}
+    } else
+      (video = video[0]).pause();
+    d = video.controls;
+    i = video.getAttribute("style");
+    video.controls = video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
+    port.onDisconnect.addListener(() => (video.controls = d, video.style = i));
+    port.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
+  }
+})();`
+      }],
     }).catch(() => 0);
   }
   chrome.action.onClicked.addListener(run);
   chrome.contextMenus.onClicked.addListener(run);
   chrome.commands.onCommand.addListener(run);
 }
-chrome.runtime.onInstalled.addListener(() =>
+chrome.runtime.onInstalled.addListener(() => (
+  chrome.userScripts.configureWorld({
+    messaging: !0
+  }),
   chrome.contextMenus.create({
     id: "",
     title: "Snap video frame",
     contexts: ["page", "video"],
     documentUrlPatterns: ["https://*/*", "file://*"]
   })
-);
+));
