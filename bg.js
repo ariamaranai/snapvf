@@ -88,7 +88,7 @@
     port.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
   }
 })();`
-      }],
+      }]
     }).catch(() => 0);
   }
   chrome.action.onClicked.addListener(run);
