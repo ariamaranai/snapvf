@@ -20,7 +20,7 @@
             url
           }, (crx = crx.find(v => v.name == "fformat")) && (
               chrome.management.setEnabled(crx = crx.id, !1),
-              () => (chrome.management.setEnabled(crx, !0))
+              () => chrome.management.setEnabled(crx, !0)
             )
           ),
           port.disconnect()
