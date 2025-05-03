@@ -28,7 +28,7 @@
         m.length < 4
           ? download(m[1])
           : (
-            chrome.debugger.attach(tabId = { tabId: tabId }, "1.3"),
+            chrome.debugger.attach(tabId = { tabId }, "1.3"),
             chrome.debugger.sendCommand(tabId, "Page.captureScreenshot", {
               captureBeyondViewport: !0,
               clip: {
