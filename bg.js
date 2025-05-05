@@ -2,8 +2,8 @@
   let tabId;
   let title;
   let windowId;
-  chrome.runtime.onUserScriptConnect.addListener(port =>
-    port.onMessage.addListener(m =>
+  chrome.runtime.onUserScriptConnect.addListener(p =>
+    p.onMessage.addListener(m =>
       chrome.management.getAll(crx => {
         let t = m[0];
         let n = Math.floor(t % 3600 / 60);
@@ -23,7 +23,7 @@
               () => chrome.management.setEnabled(crx, !0)
             )
           ),
-          port.disconnect()
+          p.disconnect()
         );
         m.length < 4
           ? download(m[1])
@@ -59,7 +59,7 @@
   let video = d.body.getElementsByTagName("video");
   let i = video.length;
   if (i) {
-    let port = await chrome.runtime.connect();
+    let p = await chrome.runtime.connect();
     if (d.head.childElementCount != 1) {
       let index = 0;
       let maxWidth = 0;
@@ -74,8 +74,8 @@
       try {
         ctx.transferFromImageBitmap(await createImageBitmap(video));
         let url = URL.createObjectURL(await cvs.convertToBlob());
-        port.onDisconnect.addListener(() => URL.revokeObjectURL(url));
-        port.postMessage([video.currentTime, url]);
+        p.onDisconnect.addListener(() => URL.revokeObjectURL(url));
+        p.postMessage([video.currentTime, url]);
         return;
       } catch (e) {}
     } else
@@ -83,8 +83,8 @@
     d = video.controls;
     i = video.getAttribute("style");
     video.controls = video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
-    port.onDisconnect.addListener(() => (video.controls = d, video.style = i));
-    port.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
+    p.onDisconnect.addListener(() => (video.controls = d, video.style = i));
+    p.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
   }
 })();`
       }]
