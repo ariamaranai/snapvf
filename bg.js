@@ -80,10 +80,13 @@
       } catch (e) {}
     } else
       (video = video[0]).pause();
+
+    let { scrollLeft, scrollTop } = d.scrollingElement;
+    scrollTo(0, 0);
     d = video.controls;
     i = video.getAttribute("style");
     video.controls = video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
-    p.onDisconnect.addListener(() => (video.controls = d, video.style = i));
+    p.onDisconnect.addListener(() => (video.controls = d, video.style = i, scrollTo(scrollLeft, scrollTop)));
     p.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
   }
 })();`
