@@ -50,8 +50,9 @@
     tabId = (b ??= a).id;
     title = b.title;
     windowId = b.windowId;
+    let frameId = a.frameId;
     chrome.userScripts.execute({
-      target: (a = a?.frameId) ? { tabId, frameIds: [a] } : { tabId, allFrames: !0 },
+      target: frameId ? { tabId, frameIds: [a] } : { tabId, allFrames: !0 },
       js: [{ code:
 `(async () => {
   let d = document;
