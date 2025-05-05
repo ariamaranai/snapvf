@@ -50,7 +50,7 @@
     tabId = (b ??= a).id;
     title = b.title;
     windowId = b.windowId;
-    let frameId = a.frameId;
+    let { frameId } = a;
     chrome.userScripts.execute({
       target: frameId ? { tabId, frameIds: [a] } : { tabId, allFrames: !0 },
       js: [{ code:
