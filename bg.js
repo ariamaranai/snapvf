@@ -1,32 +1,33 @@
 {
   let tabId;
   let title;
-  let windowId;
   chrome.runtime.onUserScriptConnect.addListener(p =>
     p.onMessage.addListener(m =>
       chrome.management.getAll(crx => {
+        if (crx = crx.find(v => v.name == "fformat")) {
+          let f = () => (
+            chrome.management.setEnabled(crx, !0),
+            chrome.downloads.onCreated.removeListener(f),
+            p.disconnect()
+          );
+          chrome.management.setEnabled(crx = crx.id, !1);
+          chrome.downloads.onCreated.addListener(f);
+        }
         let t = m[0];
         let n = Math.floor(t % 3600 / 60);
-        let download = url => (
-          chrome.downloads.download({
-            filename:
-              title.replace(/[|?":/<>*\\]/g, "_") +
-              "-" +
-              (t >= 3600 ? Math.floor(t / 3600) + "h-" : "") +
-              (n ? n + "m-" : "") +
-              ((n = Math.floor(t % 60)) ? n + "s-" : "") +
-              Math.floor(((t % 60) - n) * 1000) +
-              "ms.png",
-            url
-          }, (crx = crx.find(v => v.name == "fformat")) && (
-              chrome.management.setEnabled(crx = crx.id, !1),
-              () => chrome.management.setEnabled(crx, !0)
-            )
-          ),
-          p.disconnect()
-        );
+        let filename =
+          title.replace(/[|?":/<>*\\]/g, "_") +
+          "-" +
+          (t >= 3600 ? Math.floor(t / 3600) + "h-" : "") +
+          (n ? n + "m-" : "") +
+          ((n = Math.floor(t % 60)) ? n + "s-" : "") +
+          Math.floor(((t % 60) - n) * 1000) +
+          "ms.png";
         m.length < 4
-          ? download(m[1])
+          ? chrome.downloads.download({
+              filename,
+              url: m[1]
+            })
           : (
             chrome.debugger.attach(tabId = { tabId }, "1.3"),
             chrome.debugger.sendCommand(tabId, "Page.captureScreenshot", {
@@ -40,7 +41,10 @@
               }
             }, e => (
               chrome.debugger.detach(tabId),
-              download("data:image/png;base64," + e.data)
+              chrome.downloads.download({
+                filename,
+                url: "data:image/png;base64," + e.data
+              })
             ))
           )
       })
@@ -49,7 +53,6 @@
   let run = (a, b) => {
     tabId = (b ??= a).id;
     title = b.title;
-    windowId = b.windowId;
     let { frameId } = a;
     chrome.userScripts.execute({
       target: frameId ? { tabId, frameIds: [a] } : { tabId, allFrames: !0 },
