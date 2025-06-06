@@ -86,10 +86,16 @@
 
     let { scrollLeft, scrollTop } = d.scrollingElement;
     scrollTo(0, 0);
-    d = video.controls;
-    i = video.getAttribute("style");
+    let { fullscreenElement } = d;
+    d.exitFullscreen(i = video.getAttribute("style"));
     video.controls = video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
-    p.onDisconnect.addListener(() => (video.controls = d, video.style = i, scrollTo(scrollLeft, scrollTop)));
+    p.onDisconnect.addListener(async () => (
+      video.controls = d,
+      video.style = i,
+      scrollTo(scrollLeft, scrollTop),
+      fullscreenElement &&
+      await video.requestFullscreen()
+    ));
     p.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
   }
 })();`
