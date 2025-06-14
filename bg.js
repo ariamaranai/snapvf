@@ -50,15 +50,13 @@
       })
     )
   );
-  let run = (a, b) => {
-    tabId = (b ??= a).id;
-    title = b.title;
-    let { frameId } = a;
+  let run = (a, b) => (
+    title = b.title,
     chrome.userScripts.execute({
-      target: frameId ? { tabId, frameIds: [a] } : { tabId, allFrames: !0 },
+      target: { tabId: tabId = (b ??= a).id, allFrames: !0 },
       js: [{ file: "main.js" }]
-    }).catch(() => 0);
-  }
+    }).catch(() => 0)
+  );
   chrome.action.onClicked.addListener(run);
   chrome.contextMenus.onClicked.addListener(run);
   chrome.commands.onCommand.addListener(run);
