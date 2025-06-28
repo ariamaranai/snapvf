@@ -4,7 +4,9 @@
   let i = video.length;
   if (i) {
     let p = await chrome.runtime.connect();
-    if (d.head.childElementCount != 1) {
+    if (d.head.childElementCount == 1)
+      (video = video[0]).pause();
+    else {
       let index = 0;
       let maxWidth = 0;
       let width = 0;
@@ -21,21 +23,18 @@
         p.onDisconnect.addListener(() => URL.revokeObjectURL(url));
         p.postMessage([video.currentTime, url]);
         return;
-      } catch {}
-    } else
-      (video = video[0]).pause();
-
+      } catch (e) {}
+    }
     let { scrollLeft, scrollTop } = d.scrollingElement;
     scrollTo(0, 0);
-    let { fullscreenElement } = d;
-    d.exitFullscreen(i = video.getAttribute("style"));
+    (i = d.fullscreenElement) && d.exitFullscreen();
+    d = video.getAttribute("style");
     video.controls = video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
     p.onDisconnect.addListener(async () => (
-      video.controls = d,
-      video.style = i,
+      video.controls = 1,
+      video.style = d,
       scrollTo(scrollLeft, scrollTop),
-      fullscreenElement &&
-      await video.requestFullscreen()
+      i && await video.requestFullscreen()
     ));
     p.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
   }
