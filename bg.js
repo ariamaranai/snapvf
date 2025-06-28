@@ -50,25 +50,35 @@
       })
     )
   );
-  let run = (a, b) => (
-    title = b.title,
-    chrome.userScripts.execute({
-      target: { tabId: tabId = (b ??= a).id, allFrames: !0 },
-      js: [{ file: "main.js" }]
-    }).catch(() => 0)
-  );
+  let run = async (a, b) => {
+    title = (b ??= a).title;
+    try {
+      await chrome.userScripts.execute({
+        target: { tabId: tabId = b.id, allFrames: !0 },
+        js: [{ file: "main.js" }]
+      });
+    } catch {}
+  }
   chrome.action.onClicked.addListener(run);
   chrome.contextMenus.onClicked.addListener(run);
   chrome.commands.onCommand.addListener(run);
 }
-chrome.runtime.onInstalled.addListener(() => (
-  chrome.userScripts.configureWorld({
-    messaging: !0
-  }),
-  chrome.contextMenus.create({
-    id: "",
-    title: "Snap video frame",
-    contexts: ["page", "video"],
-    documentUrlPatterns: ["https://*/*", "file://*"]
-  })
-));
+{
+  let f = () => {
+    let { userScripts } = chrome;
+    userScripts && (
+      userScripts.configureWorld({ messaging: !0 }),
+      chrome.runtime.onStartup.removeListener(f)
+    );
+  }
+  chrome.runtime.onStartup.addListener(f);
+  chrome.runtime.onInstalled.addListener(() => (
+    chrome.contextMenus.create({
+      id: "",
+      title: "Snap video frame",
+      contexts: ["page", "video"],
+      documentUrlPatterns: ["https://*/*", "file://*"]
+    }),
+    f()
+  ));
+}

@@ -21,7 +21,7 @@
         p.onDisconnect.addListener(() => URL.revokeObjectURL(url));
         p.postMessage([video.currentTime, url]);
         return;
-      } catch (e) {}
+      } catch {}
     } else
       (video = video[0]).pause();
 
