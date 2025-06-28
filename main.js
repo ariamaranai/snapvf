@@ -23,7 +23,7 @@
         p.onDisconnect.addListener(() => URL.revokeObjectURL(url));
         p.postMessage([video.currentTime, url]);
         return;
-      } catch (e) {}
+      } catch {}
     }
     let { scrollLeft, scrollTop } = d.scrollingElement;
     scrollTo(0, 0);
