@@ -3,7 +3,7 @@
   let video = d.body.getElementsByTagName("video");
   let i = video.length;
   if (i) {
-    let p = await chrome.runtime.connect();
+    let p = chrome.runtime.connect();
     if (d.head.childElementCount == 1)
       (video = video[0]).pause();
     else {
