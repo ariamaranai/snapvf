@@ -14,14 +14,14 @@
           chrome.downloads.onCreated.addListener(f);
         }
         let t = m[0];
-        let n = Math.floor(t % 3600 / 60);
+        let n = t % 3600 / 60 ^ 0;
         let filename =
           title.replace(/[|?":/<>*\\]/g, "_") +
           "-" +
-          (t >= 3600 ? Math.floor(t / 3600) + "h-" : "") +
+          (t >= 3600 ? (t / 3600 ^ 0) + "h-" : "") +
           (n ? n + "m-" : "") +
-          ((n = Math.floor(t % 60)) ? n + "s-" : "") +
-          Math.floor(((t % 60) - n) * 1000) +
+          ((n = t % 60 ^ 0) ? n + "s-" : "") +
+          (((t % 60) - n) * 1000 ^ 0) +
           "ms.png";
         m.length < 4
           ? chrome.downloads.download({
