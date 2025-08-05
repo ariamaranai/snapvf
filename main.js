@@ -1,23 +1,31 @@
 (async () => {
   let d = document;
-  let video = d.body.getElementsByTagName("video");
-  let i = video.length;
-  if (i) {
+  let videos = d.getElementsByTagName("video");
+  let videoLen = videos.length;
+  if (videoLen) {
+    let video = videos[0];
     let p = chrome.runtime.connect();
-    if (d.head.childElementCount == 1)
-      (video = video[0]).pause();
+    let { scrollLeft, scrollTop } = d.scrollingElement;
+    if (videoLen < 2)
+      video.pause();
     else {
-      let index = 0;
-      let maxWidth = 0;
-      let width = 0;
-      while (
-        video[--i].readyState &&
-        maxWidth < (width = video[i].offsetWidth) &&
-        (maxWidth = width, index = i),
-        i
-      );
-
-      (video = video[index]).pause();
+      let cx = (innerWidth + scrollLeft) / 2;
+      let cy = (innerHeight + scrollTop) / 2; 
+      let minds = 2e9;
+      let i = 0;
+      while (i < videos.length) {
+        let _video = videos[i];
+        if (_video.readyState) {
+          let rect = _video.getBoundingClientRect();
+          let ds = Math.abs(cx - (rect.width / 2 + rect.x)) + Math.abs(cy - (rect.height / 2 + rect.y));
+          ds < minds && (
+            minds = ds,
+            video = _video
+          );
+        }
+        ++i;
+      }
+      video.pause();
       let cvs = new OffscreenCanvas(video.videoWidth, video.videoHeight);
       let ctx = cvs.getContext("bitmaprenderer");
       try {
@@ -28,16 +36,16 @@
         return;
       } catch {}
     }
-    let { scrollLeft, scrollTop } = d.scrollingElement;
     scrollTo(0, 0);
-    (i = d.fullscreenElement) && d.exitFullscreen();
-    d = video.getAttribute("style");
+    let isFullscreen = d.fullscreenElement;
+    isFullscreen && d.exitFullscreen();
+    let style = video.getAttribute("style");
     video.controls = video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
     p.onDisconnect.addListener(async () => (
       video.controls = 1,
-      video.style = d,
+      video.style = style,
       scrollTo(scrollLeft, scrollTop),
-      i && await video.requestFullscreen()
+      isFullscreen && await video.requestFullscreen()
     ));
     p.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
   }

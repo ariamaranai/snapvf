@@ -16,7 +16,7 @@
         let t = m[0];
         let n = t % 3600 / 60 ^ 0;
         let filename =
-          title.replace(/[|?":/<>*\\]/g, "_") +
+          title.trim().replace(/^\.|[|?":/<>*\\]/g, "_") +
           "-" +
           (t >= 3600 ? (t / 3600 ^ 0) + "h-" : "") +
           (n ? n + "m-" : "") +
