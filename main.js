@@ -1,52 +1,41 @@
 (async () => {
-  let d = document;
-  let videos = d.getElementsByTagName("video");
-  let videoLen = videos.length;
-  if (videoLen) {
-    let video = videos[0];
-    let p = chrome.runtime.connect();
-    let { scrollLeft, scrollTop } = d.scrollingElement;
-    if (videoLen < 2)
-      video.pause();
-    else {
-      let cx = (innerWidth + scrollLeft) / 2;
-      let cy = (innerHeight + scrollTop) / 2; 
-      let minds = 2e9;
-      let i = 0;
-      while (i < videos.length) {
-        let _video = videos[i];
-        if (_video.readyState) {
-          let rect = _video.getBoundingClientRect();
-          let ds = Math.abs(cx - (rect.width / 2 + rect.x)) + Math.abs(cy - (rect.height / 2 + rect.y));
-          ds < minds && (
-            minds = ds,
-            video = _video
-          );
-        }
-        ++i;
-      }
-      video.pause();
-      let cvs = new OffscreenCanvas(video.videoWidth, video.videoHeight);
-      let ctx = cvs.getContext("bitmaprenderer");
-      try {
-        ctx.transferFromImageBitmap(await createImageBitmap(video));
-        let url = URL.createObjectURL(await cvs.convertToBlob());
-        p.onDisconnect.addListener(() => URL.revokeObjectURL(url));
-        p.postMessage([video.currentTime, url]);
-        return;
-      } catch {}
+  let { Math, document, innerWidth, innerHeight } = self;
+  let { max, min } = Math;
+  let videos = document.getElementsByTagName("video");
+  let video;
+  let maxVisibleSize = 0;
+  let i = 0;
+  while (i < videos.length) {
+    let _video = videos[i];
+    if (_video.readyState) {
+      let { x, right, y, bottom } = _video.getBoundingClientRect();
+      let visibleSize = max(min(right, innerWidth) - max(x, 0), 0) * max(min(bottom, innerHeight) - max(y, 0), 0);
+      maxVisibleSize < visibleSize && (
+        maxVisibleSize = visibleSize,
+        video = _video
+      );
     }
-    scrollTo(0, 0);
-    let isFullscreen = d.fullscreenElement;
-    isFullscreen && d.exitFullscreen();
+    ++i;
+  }
+  if (video) {
+    video.pause();
+    let { currentTime, videoWidth, videoHeight } = video;
+    let p = chrome.runtime.connect();
+    let cvs = new OffscreenCanvas(videoWidth, videoHeight);
+    let ctx = cvs.getContext("bitmaprenderer");
+    try {
+      ctx.transferFromImageBitmap(await createImageBitmap(video));
+      let url = URL.createObjectURL(await cvs.convertToBlob());
+      p.onDisconnect.addListener(() => URL.revokeObjectURL(url));
+      p.postMessage([currentTime, url]);
+      return;
+    } catch {}
+    let dpr = devicePixelRatio;
+    let { scrollLeft, scrollTop } = document.scrollingElement;
+    let { x, y, width, height } = video.getBoundingClientRect();
     let style = video.getAttribute("style");
-    video.controls = video.setAttribute("style", "all:unset;position:fixed;inset:0;z-index:2147483647");
-    p.onDisconnect.addListener(async () => (
-      video.controls = 1,
-      video.style = style,
-      scrollTo(scrollLeft, scrollTop),
-      isFullscreen && await video.requestFullscreen()
-    ));
-    p.postMessage([video.currentTime, video.videoWidth, video.videoHeight, devicePixelRatio]);
+    video.controls = video.setAttribute("style", style + ";position:relative;z-index:2147483647");
+    p.onDisconnect.addListener(() => video.controls = !video.setAttribute("style", style));
+    p.postMessage([currentTime, videoWidth, videoHeight, (x + scrollLeft) * dpr, (y + scrollTop) * dpr, width * dpr, height * dpr]);
   }
 })();

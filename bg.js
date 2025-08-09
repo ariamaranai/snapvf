@@ -1,8 +1,6 @@
 {
-  let tabId;
-  let title;
   chrome.runtime.onUserScriptConnect.addListener(p =>
-    p.onMessage.addListener(m =>
+    p.onMessage.addListener((m, p) => {
       chrome.management.getAll(crx => {
         if (crx = crx.find(v => v.name == "fformat")) {
           let f = () => (
@@ -15,6 +13,7 @@
         }
         let t = m[0];
         let n = t % 3600 / 60 ^ 0;
+        let { title, id: tabId } = p.sender.tab;
         let filename =
           title.trim().replace(/^\.|[|?":/<>*\\]/g, "_") +
           "-" +
@@ -23,38 +22,38 @@
           ((n = t % 60 ^ 0) ? n + "s-" : "") +
           (((t % 60) - n) * 1000 ^ 0) +
           "ms.png";
-        m.length < 4
-          ? chrome.downloads.download({
-              filename,
-              url: m[1]
-            })
-          : (
-            chrome.debugger.attach(tabId = { tabId }, "1.3"),
-            chrome.debugger.sendCommand(tabId, "Page.captureScreenshot", {
+        if (m.length < 4)
+          chrome.downloads.download({
+            filename,
+            url: m[1]
+          })
+        else {
+          let target = { tabId };
+          chrome.debugger.attach(target, "1.3"),
+            chrome.debugger.sendCommand(target, "Page.captureScreenshot", {
               captureBeyondViewport: !0,
               clip: {
-                x: 0,
-                y: 0,
-                width: m[1],
-                height: m[2],
-                scale: m[3]
+                x: m[3],
+                y: m[4],
+                width: m[5],
+                height: m[6],
+                scale: m[1] / m[5]
               }
             }, e => (
-              chrome.debugger.detach(tabId),
+              chrome.debugger.detach(target),
               chrome.downloads.download({
                 filename,
                 url: "data:image/png;base64," + e.data
               })
             ))
-          )
+          }
       })
-    )
+    })
   );
   let run = async (a, b) => {
-    title = (b ??= a).title;
     try {
       await chrome.userScripts.execute({
-        target: { tabId: tabId = b.id, allFrames: !0 },
+        target: { tabId: (b || a).id, allFrames: !0 },
         js: [{ file: "main.js" }]
       });
     } catch {}
