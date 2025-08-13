@@ -19,11 +19,10 @@
   }
   if (video) {
     video.pause();
-    let { currentTime, videoWidth, videoHeight } = video;
     let p = chrome.runtime.connect();
+    let { currentTime, videoWidth, videoHeight } = video;
     let cvs = new OffscreenCanvas(videoWidth, videoHeight);
     let ctx = cvs.getContext("bitmaprenderer");
-
     createImageBitmap(video)
     .then(bmp => (ctx.transferFromImageBitmap(bmp), cvs.convertToBlob()))
     .then(blob => Promise.try(URL.createObjectURL(blob)))
