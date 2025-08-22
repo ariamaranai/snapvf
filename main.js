@@ -21,9 +21,9 @@
     video.pause();
     let p = chrome.runtime.connect();
     let { currentTime, videoWidth, videoHeight } = video;
-    let cvs = new OffscreenCanvas(videoWidth, videoHeight);
-    let ctx = cvs.getContext("bitmaprenderer");
     try {
+      let cvs = new OffscreenCanvas(videoWidth, videoHeight);
+      let ctx = cvs.getContext("bitmaprenderer");
       ctx.transferFromImageBitmap(await createImageBitmap(video));
       let url = URL.createObjectURL(await cvs.convertToBlob());
       p.onDisconnect.addListener(() => URL.revokeObjectURL(url));
