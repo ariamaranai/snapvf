@@ -23,8 +23,7 @@
     let { currentTime, videoWidth, videoHeight } = video;
     try {
       let cvs = new OffscreenCanvas(videoWidth, videoHeight);
-      let ctx = cvs.getContext("bitmaprenderer");
-      ctx.transferFromImageBitmap(await createImageBitmap(video));
+      cvs.getContext("bitmaprenderer").transferFromImageBitmap(await createImageBitmap(video));
       let url = URL.createObjectURL(await cvs.convertToBlob());
       p.onDisconnect.addListener(() => URL.revokeObjectURL(url));
       p.postMessage([currentTime, url]);
