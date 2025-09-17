@@ -19,21 +19,21 @@
   }
   if (video) {
     video.pause();
-    let p = chrome.runtime.connect();
     let { currentTime, videoWidth, videoHeight } = video;
     try {
       let cvs = new OffscreenCanvas(videoWidth, videoHeight);
       cvs.getContext("bitmaprenderer").transferFromImageBitmap(await createImageBitmap(video));
-      let url = URL.createObjectURL(await cvs.convertToBlob());
-      p.onDisconnect.addListener(() => URL.revokeObjectURL(url));
-      p.postMessage([currentTime, url]);
+      let fr = new FileReader;
+      fr.readAsDataURL(await cvs.convertToBlob());
+      fr.onload = e => chrome.runtime.sendMessage([currentTime, e.target.result]);
     } catch {
+      let p = chrome.runtime.connect();
       let dpr = devicePixelRatio;
       let { scrollLeft, scrollTop } = document.scrollingElement;
-      let { x, y, width, height } = video.getBoundingClientRect();
       let { controls } = video;
       let style = video.getAttribute("style");
       video.controls = video.setAttribute("style", style + ";position:relative;z-index:2147483647");
+      let { x, y, width, height } = video.getBoundingClientRect();
       p.onDisconnect.addListener(() => (video.controls = controls, video.setAttribute("style", style)));
       p.postMessage([currentTime, videoWidth, videoHeight, (x + scrollLeft) * dpr, (y + scrollTop) * dpr, width * dpr, height * dpr]);
     }
