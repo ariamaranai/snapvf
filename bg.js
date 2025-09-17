@@ -60,14 +60,14 @@ chrome.runtime.onUserScriptConnect.addListener(p =>
   chrome.commands.onCommand.addListener(run);
 }
 {
-  let f = () => {
+  let onStartup = () => {
     let { userScripts } = chrome;
     userScripts && (
       userScripts.configureWorld({ messaging: !0 }),
-      chrome.runtime.onStartup.removeListener(f)
+      chrome.runtime.onStartup.removeListener(onStartup)
     );
   }
-  chrome.runtime.onStartup.addListener(f);
+  chrome.runtime.onStartup.addListener(onStartup);
   chrome.runtime.onInstalled.addListener(() => (
     chrome.contextMenus.create({
       id: "",
