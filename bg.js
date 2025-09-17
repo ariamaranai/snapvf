@@ -75,6 +75,6 @@ chrome.runtime.onUserScriptConnect.addListener(p =>
       contexts: ["page", "video"],
       documentUrlPatterns: ["https://*/*", "file://*"]
     }),
-    f()
+    onStartup()
   ));
 }
