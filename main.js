@@ -25,7 +25,7 @@
       cvs.getContext("bitmaprenderer").transferFromImageBitmap(await createImageBitmap(video));
       let fr = new FileReader;
       fr.readAsDataURL(await cvs.convertToBlob());
-      fr.onload = e => chrome.runtime.sendMessage([currentTime, fr.result]);
+      fr.onload = () => chrome.runtime.sendMessage([currentTime, fr.result]);
     } catch {
       let p = chrome.runtime.connect();
       let dpr = devicePixelRatio;
