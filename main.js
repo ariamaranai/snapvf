@@ -1,7 +1,8 @@
 (async () => {
   let { Math, document, innerWidth, innerHeight } = self;
   let { max, min } = Math;
-  let videos = document.getElementsByTagName("video");
+  let { fullscreenElement } = document;
+  let videos = (fullscreenElement ?? document).getElementsByTagName("video");
   let video;
   let maxVisibleSize = 0;
   let i = 0;
@@ -17,7 +18,7 @@
     }
     ++i;
   }
-  if (video) {
+  if (video ??= fullscreenElement?.shadowRoot?.querySelector("video")) {
     video.pause();
     let { currentTime, videoWidth, videoHeight } = video;
     try {
