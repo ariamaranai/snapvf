@@ -2,7 +2,8 @@
   let { Math, document, innerWidth, innerHeight } = self;
   let { max, min } = Math;
   let { fullscreenElement } = document;
-  let videos = (fullscreenElement ?? document).getElementsByTagName("video");
+  let target = fullscreenElement ?? document;
+  let videos = target.getElementsByTagName("video");
   let video;
   let maxVisibleSize = 0;
   let i = 0;
@@ -18,6 +19,18 @@
     }
     ++i;
   }
+  let frameRects;
+  let { scrollLeft, scrollTop } = document.scrollingElement;
+  if (self == top) {
+    let iframes = target.getElementsByTagName("iframe");
+    let i = 0;
+    while (i < iframes.length) {
+      let rect = iframes[i].getBoundingClientRect();
+      (max(min(rect.right, innerWidth) - max(rect.x, 0), 0) * max(min(rect.bottom, innerHeight) - max(rect.y, 0), 0)) > 32767 &&
+      (frameRects ??= []).push((rect.x += scrollLeft, rect.y += scrollTop, rect));
+      ++i;
+    }
+  }
   if (video ??= fullscreenElement?.shadowRoot?.querySelector("video")) {
     video.pause();
     let { currentTime, videoWidth, videoHeight } = video;
@@ -29,14 +42,15 @@
       fr.onload = () => chrome.runtime.sendMessage([currentTime, fr.result]);
     } catch {
       let p = chrome.runtime.connect();
-      let dpr = devicePixelRatio;
-      let { scrollLeft, scrollTop } = document.scrollingElement;
       let { controls } = video;
       let style = video.getAttribute("style");
       video.controls = video.setAttribute("style", style + ";position:relative;z-index:2147483647");
       let { x, y, width, height } = video.getBoundingClientRect();
       p.onDisconnect.addListener(() => (video.controls = controls, video.setAttribute("style", style)));
-      p.postMessage([currentTime, videoWidth, videoHeight, (x + scrollLeft) * dpr, (y + scrollTop) * dpr, width * dpr, height * dpr]);
+      let m = [currentTime, videoWidth, videoHeight, x, y, width, height, devicePixelRatio];
+      frameRects ? m.push(frameRects) : (m[3] += scrollLeft, m[4] += scrollTop);
+      p.postMessage(m);
     }
-  }
+  } else
+    frameRects && chrome.runtime.sendMessage(frameRects);
 })();
