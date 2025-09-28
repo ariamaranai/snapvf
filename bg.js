@@ -48,15 +48,13 @@
               rect && (x += rect.x, y += rect.y);
             }
             let dpr = m[7];
-            x *= dpr;
-            y *= dpr;
             let target = { tabId };
             await chrome.debugger.attach(target, "1.3");
             let { data } = await chrome.debugger.sendCommand(target, "Page.captureScreenshot", {
               captureBeyondViewport: !0,
               clip: {
-                x,
-                y,
+                x: x * dpr,
+                y: y * dpr,
                 width: width * dpr,
                 height: height * dpr,
                 scale: m[1] / width * dpr
