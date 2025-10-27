@@ -3,6 +3,7 @@
   let { max, min } = Math;
   let { fullscreenElement } = document;
   let video = fullscreenElement;
+  let frameRects;
   if (video?.tagName != "VIDEO") {
     let target = fullscreenElement ?? document;
     let videos = target.getElementsByTagName("VIDEO");
@@ -20,7 +21,6 @@
       }
       ++i;
     }
-    let frameRects;
     let { scrollLeft, scrollTop } = document.scrollingElement;
     if (self == top) {
       let iframes = target.getElementsByTagName("iframe");
