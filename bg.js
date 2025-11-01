@@ -29,7 +29,7 @@
         }
         let t60 = t % 60;
         let n = t % 3600 / 60 ^ 0;
-        let tab = (p.sender || p).tab;
+        let { tab } = p.sender || p;
         let filename =
           tab.title.trim().replace(/^\.|[|?":/<>*\\]/g, "_") +
           "-" +
