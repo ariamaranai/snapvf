@@ -31,10 +31,9 @@
         ++i;
       }
     }
-    video ?? ((video = fullscreenElement?.shadowRoot?.querySelector("VIDEO")) && !video.readyState || (video = 0));
-  } else
-    video.readyState || (video = 0);
-  if (video) {
+    video ?? (video = fullscreenElement?.shadowRoot?.querySelector("VIDEO"));
+  }
+  if (video?.readyState) {
     video.pause();
     let currentTime = video.currentTime;
     let videoWidth = video.videoWidth;
