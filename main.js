@@ -31,7 +31,7 @@
         ++i;
       }
     }
-    video ?? (video = fullscreenElement?.shadowRoot?.querySelector("VIDEO"));
+    video ??= fullscreenElement?.shadowRoot?.querySelector("VIDEO");
   }
   if (video?.readyState) {
     video.pause();
