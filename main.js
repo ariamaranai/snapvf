@@ -5,7 +5,7 @@
   let video = fullscreenElement;
   if (!(video instanceof HTMLVideoElement)) {
     let target = video ?? document;
-    let videos = target.getElementsByTagName("VIDEO");
+    let videos = target.getElementsByTagName("video");
     let { max, min } = Math;
     let maxVisibleSize = 0;
     let i = 0;
@@ -31,7 +31,7 @@
         ++i;
       }
     }
-    video ??= fullscreenElement?.shadowRoot?.querySelector("VIDEO");
+    video ??= fullscreenElement?.shadowRoot?.querySelector("video");
   }
   if (video?.readyState) {
     video.pause();
