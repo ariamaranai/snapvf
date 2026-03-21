@@ -19,7 +19,7 @@
     "debugger",
     "downloads",
     "management",
-    "userScripts"
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"

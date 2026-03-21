@@ -2,7 +2,7 @@
 {
   let run = async (a, b) => {
     try {
-      await chrome.userScripts.execute({
+      await chrome.scripting.executeScript({
         target: { tabId: (b || a).id, allFrames: !0 },
         js: [{ file: "main.js" }]
       });
@@ -13,7 +13,7 @@
   chrome.commands.onCommand.addListener(run);
 
   let frameRects = 0;
-  let onUserScriptMessage = (msg, p) => {
+  let onMessage = (msg, p) => {
     let t = msg[0];
     if (typeof t == "number") {
       chrome.management.getAll(async crx => {
@@ -72,17 +72,9 @@
     } else
       frameRects = msg;
   }
-  chrome.runtime.onUserScriptMessage.addListener(onUserScriptMessage);
-  chrome.runtime.onUserScriptConnect.addListener(p => p.onMessage.addListener(onUserScriptMessage));
+  chrome.runtime.onMessage.addListener(onMessage);
+  chrome.runtime.onConnect.addListener(p => p.onMessage.addListener(onMessage));
 
-  let onStartup = () => {
-    let userScripts = chrome.userScripts;
-    userScripts && (
-      userScripts.configureWorld({ messaging: !0 }),
-      chrome.runtime.onStartup.removeListener(onStartup)
-    );
-  }
-  chrome.runtime.onStartup.addListener(onStartup);
   chrome.runtime.onInstalled.addListener(() => (
     chrome.contextMenus.create({
       id: "",
