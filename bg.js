@@ -75,13 +75,12 @@
   chrome.runtime.onMessage.addListener(onMessage);
   chrome.runtime.onConnect.addListener(p => p.onMessage.addListener(onMessage));
 
-  chrome.runtime.onInstalled.addListener(() => (
+  chrome.runtime.onInstalled.addListener(() =>
     chrome.contextMenus.create({
       id: "",
       title: "Snap video frame",
       contexts: ["page", "video"],
       documentUrlPatterns: ["https://*/*", "file://*"]
-    }),
-    onStartup()
-  ));
+    })
+  );
 }
