@@ -4,7 +4,7 @@
     try {
       await chrome.scripting.executeScript({
         target: { tabId: (b || a).id, allFrames: !0 },
-        js: [{ file: "main.js" }]
+        files: ["main.js"]
       });
     } catch {}
   }
