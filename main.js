@@ -1,10 +1,11 @@
 (async () => {
   let frameRects;
-  let { scrollLeft, scrollTop } = document.scrollingElement;
-  let fullscreenElement = document.fullscreenElement;
+  let d = document;
+  let { scrollLeft, scrollTop } = d.scrollingElement;
+  let fullscreenElement = d.fullscreenElement;
   let video = fullscreenElement;
-  if (!(video instanceof HTMLVideoElement)) {
-    let target = video ?? document;
+  if (video.tagName != "video") {
+    let target = video ?? d;
     let videos = target.getElementsByTagName("video");
     let { max, min } = Math;
     let maxVisibleSize = 0;
