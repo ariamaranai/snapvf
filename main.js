@@ -4,7 +4,7 @@
   let { scrollLeft, scrollTop } = d.scrollingElement;
   let fullscreenElement = d.fullscreenElement;
   let video = fullscreenElement;
-  if (video.tagName != "video") {
+  if (!(video instanceof HTMLVideoElement)) {
     let target = video ?? d;
     let videos = target.getElementsByTagName("video");
     let { max, min } = Math;

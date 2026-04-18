@@ -13,10 +13,9 @@
   chrome.commands.onCommand.addListener(run);
 
   let frameRects = 0;
-  let onMessage = (msg, p) => {
-    let t = msg[0];
-    if (typeof t == "number") {
-      chrome.management.getAll(async crx => {
+  let onMessage = (msg, p) =>
+    typeof msg[0] == "number"
+      ? chrome.management.getAll(async crx => {
         let crxFFormat = crx.find(v => v.name == "fformat");
         if (crxFFormat) {
           let crxFFormatId = crxFFormat.id; 
@@ -27,6 +26,7 @@
           );
           chrome.downloads.onCreated.addListener(onDownloadsCreated);
         }
+        let t = msg[0];
         let t60 = t % 60;
         let n = t % 3600 / 60 ^ 0;
         let { tab } = p.sender || p;
@@ -68,10 +68,9 @@
           } catch {}
           p.disconnect();
         }
-      });
-    } else
-      frameRects = msg;
-  }
+      })
+      : frameRects = msg;
+
   chrome.runtime.onMessage.addListener(onMessage);
   chrome.runtime.onConnect.addListener(p => p.onMessage.addListener(onMessage));
 
