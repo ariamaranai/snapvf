@@ -5,31 +5,33 @@
   let fullscreenElement = d.fullscreenElement;
   let video = fullscreenElement;
   if (!(video instanceof HTMLVideoElement)) {
+    let wndW = innerWidth;
+    let wndH = innerHeight;
     let target = video ?? d;
     let videos = target.getElementsByTagName("video");
-    let { max, min } = Math;
     let maxVisibleSize = 0;
-    let i = 0;
-    while (i < videos.length) {
-      let _video = videos[i];
+    let i = videos.length;
+    while (i) {
+      let _video = videos[--i];
       if (_video.readyState) {
-        let rect = _video.getBoundingClientRect();
-        let visibleSize = max(min(rect.right, innerWidth) - max(rect.x, 0), 0) * max(min(rect.bottom, innerHeight) - max(rect.y, 0), 0);
+        let { right, x, bottom, y } = _video.getBoundingClientRect();        
+        let visibleW = (right < wndW ? right : wndW) - (x < 0 ? 0 : x);
+        let visibleH = (bottom < wndH ? bottom : wndH) - (y < 0 ? 0 : y);
+        let visibleSize = visibleW * visibleH;
         maxVisibleSize < visibleSize && (
           maxVisibleSize = visibleSize,
           video = _video
         );
       }
-      ++i;
     }
     if (self == top) {
       let iframes = target.getElementsByTagName("iframe");
-      let i = 0;
-      while (i < iframes.length) {
-        let rect = iframes[i].getBoundingClientRect();
-        (max(min(rect.right, innerWidth) - max(rect.x, 0), 0) * max(min(rect.bottom, innerHeight) - max(rect.y, 0), 0)) > 32767 &&
-        (frameRects ??= []).push(rect.x += scrollLeft, rect.y += scrollTop, rect);
-        ++i;
+      let i = iframes.length;
+      while (i) {
+        let rect = iframes[--i].getBoundingClientRect();
+        let { right, x, bottom, y } = rect;
+        ((right < wndW ? right : wndW) - (x < 0 ? 0 : x) * (bottom < wndH ? bottom : wndH) - (y < 0 ? 0 : y)) > 32767 &&
+        (frameRects ??= []).push((rect.x += scrollLeft, rect.y += scrollTop, rect));
       }
     }
     video ??= fullscreenElement?.shadowRoot?.querySelector("video");
