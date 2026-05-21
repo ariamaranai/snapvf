@@ -47,7 +47,7 @@
             let width = msg[5];
             let height = msg[6];
             if (frameRects ||= msg[8]) {
-              let rect = frameRects.find(v => v.width - 127 < width && v.height - 127 < height);
+              let rect = frameRects.find(v => v.width > width + 127 || v.height > height + 127);
               rect && (x += rect.x, y += rect.y);
             }
             let target = { tabId: tab.id };
