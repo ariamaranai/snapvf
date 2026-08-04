@@ -4,7 +4,7 @@
   let { scrollLeft, scrollTop } = d.scrollingElement;
   let fullscreenElement = d.fullscreenElement;
   let video = fullscreenElement;
-  if (video.localName != "video") {
+  if (video?.localName != "video") {
     let wndW = innerWidth;
     let wndH = innerHeight;
     let target = video ?? d;
