@@ -25,7 +25,7 @@ onunhandledrejection = e => e.preventDefault();
       ((t60 - n) * 1000 ^ 0) +
       "ms.png";
 
-    if (msg.length < 3) {
+    if (msg.length === 2) {
       let fr = new FileReader;
       let bitmap = msg[1];
       let cvs = new OffscreenCanvas(bitmap.width, bitmap.height);
