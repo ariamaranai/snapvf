@@ -25,8 +25,14 @@ onunhandledrejection = e => e.preventDefault();
       ((t60 - n) * 1000 ^ 0) +
       "ms.png";
 
-    if (msg.length < 3)
-      return downloads.download({ filename, url: msg[1] });
+    if (msg.length < 3) {
+      let fr = new FileReader;
+      let bitmap = msg[1];
+      let cvs = new OffscreenCanvas(bitmap.width, bitmap.height);
+      cvs.getContext("bitmaprenderer").transferFromImageBitmap(bitmap);
+      cvs.convertToBlob().then(r => fr.readAsDataURL(r));
+      return fr.onload = e => downloads.download({ filename, url: fr.result });
+    }
 
     let target = { tabId: tab.id };
     let dpr = msg[7];

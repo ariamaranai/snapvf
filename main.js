@@ -14,7 +14,7 @@
     while (i) {
       let _video = videos[--i];
       if (_video.readyState) {
-        let { right, x, bottom, y } = _video.getBoundingClientRect();        
+        let { right, x, bottom, y } = _video.getBoundingClientRect();
         let visibleW = (right < wndW ? right : wndW) - (x < 0 ? 0 : x);
         let visibleH = (bottom < wndH ? bottom : wndH) - (y < 0 ? 0 : y);
         let visibleSize = visibleW * visibleH;
@@ -39,21 +39,15 @@
   if (video?.readyState) {
     video.pause();
     let currentTime = video.currentTime;
-    let videoWidth = video.videoWidth;
-    let videoHeight = video.videoHeight;
     try {
-      let cvs = new OffscreenCanvas(videoWidth, videoHeight);
-      cvs.getContext("bitmaprenderer").transferFromImageBitmap(await createImageBitmap(video));
-      let fr = new FileReader;
-      fr.readAsDataURL(await cvs.convertToBlob());
-      fr.onload = () => chrome.runtime.sendMessage([currentTime, fr.result]);
+      chrome.runtime.sendMessage([currentTime, await createImageBitmap(video)]);
     } catch {
       let p = chrome.runtime.connect();
       let controls = video.controls;
       let style = video.getAttribute("style");
       video.controls = video.setAttribute("style", style + ";position:relative;z-index:2147483647");
       let rect = video.getBoundingClientRect();
-      let m = [currentTime, videoWidth, videoHeight, rect.x, rect.y, rect.width, rect.height, devicePixelRatio];
+      let m = [currentTime, video.videoWidth, video.videoHeight, rect.x, rect.y, rect.width, rect.height, devicePixelRatio];
       frameRects ? m.push(frameRects) : (m[3] += scrollLeft, m[4] += scrollTop);
       p.postMessage(m);
       p.onDisconnect.addListener(() => (video.controls = controls, video.setAttribute("style", style)));

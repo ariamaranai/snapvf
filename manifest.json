@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "snapvf",
   "version": "0",
+  "message_serialization": "structured_clone",
   "description": "Snap video frame",
   "icons": {
     "128": "128.png"
