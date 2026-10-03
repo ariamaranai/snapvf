@@ -6,7 +6,7 @@ onunhandledrejection = e => e.preventDefault();
     target: { tabId: (b || a).id, allFrames: !0 },
     files: ["main.js"]
   });
-  let frameRects = 0;
+  let frameRects;
   let onMessage = (msg, p) => {
     if (typeof msg[0] !== "number")
       return frameRects = msg;
@@ -34,27 +34,22 @@ onunhandledrejection = e => e.preventDefault();
     let y = msg[4];
     let width = msg[5];
     let height = msg[6];
-    if (frameRects ||= msg[8]) {
+    if (frameRects ??= msg[8]) {
       let rect = frameRects.find(v => v.width > width + 127 || v.height > height + 127);
       rect && (x += rect.x, y += rect.y);
     }
     _debugger.attach(target, "1.3")
-    .then(() =>
-      _debugger.sendCommand(target, "Page.captureScreenshot", {
-        captureBeyondViewport: !0,
-        clip: {
-          x: dpr * x,
-          y: dpr * y,
-          width: dpr * width,
-          height: dpr * height,
-          scale: dpr * (msg[1] / width)
-        }
-      }).data
-    )
-    .then(r => (
-      _debugger.detach(target),
-      downloads.download({ filename, url: "data:image/png;base64," + r.data })),
-    )
+    _debugger.sendCommand(target, "Page.captureScreenshot", {
+      captureBeyondViewport: !0,
+      clip: {
+        x: dpr * x,
+        y: dpr * y,
+        width: dpr * width,
+        height: dpr * height,
+        scale: dpr * (msg[1] / width)
+      }
+    }), r => downloads.download({ filename, url: "data:image/png;base64," + r.data });
+    return _debugger.detach(target);
   }
 
   action.onClicked.addListener(f);
