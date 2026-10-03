@@ -18,7 +18,6 @@
     "contextMenus",
     "debugger",
     "downloads",
-    "management",
     "scripting"
   ],
   "host_permissions": [
