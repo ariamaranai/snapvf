@@ -2,7 +2,7 @@ onunhandledrejection = e => e.preventDefault();
 {
   let { action, commands, contextMenus, debugger: _debugger, downloads, runtime, scripting } = chrome;
   let f = (a, b) => scripting.executeScript({
-    target: { tabId: (b || a).id, allFrames: !0 },
+    target: { tabId: (b ?? a).id, allFrames: !0 },
     files: ["main.js"]
   });
   let frameRects;
