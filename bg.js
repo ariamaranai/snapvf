@@ -10,30 +10,22 @@ onunhandledrejection = e => e.preventDefault();
   let onMessage = (msg, p) => {
     if (typeof msg[0] !== "number")
       return frameRects = msg;
-
     p.disConnect?.();
-
-    let t = msg[0];
-    let t60 = t % 60;
-    let n = t % 3600 / 60 ^ 0;
+    let $0 = msg[0];
+    let $1 = $0 % 60;
+    let $2 = $0 % 3600 / 60 ^ 0;
     let { tab } = p.sender || p;
     let filename =
       tab.title.trim().replace(/^\.|[|?":/<>*\\]/g, "_") + "-" +
-      (t >= 3600 ? (t / 3600 ^ 0) + "h-" : "") +
-      (n ? n + "m-" : "") +
-      ((n = t60 ^ 0) ? n + "s-" : "") +
-      ((t60 - n) * 1000 ^ 0) +
+      ($0 >= 3600 ? ($0 / 3600 ^ 0) + "h-" : "") +
+      ($2 ? $2 + "m-" : "") +
+      (($0 = $1 ^ 0) ? $0 + "s-" : "") +
+      (($1 - $0) * 1000 ^ 0) +
       "ms.png";
-
-    if (msg.length === 2) {
-      let fr = new FileReader;
-      let bitmap = msg[1];
-      let cvs = new OffscreenCanvas(bitmap.width, bitmap.height);
-      cvs.getContext("bitmaprenderer").transferFromImageBitmap(bitmap);
-      cvs.convertToBlob().then(r => fr.readAsDataURL(r));
-      return fr.onload = e => downloads.download({ filename, url: fr.result });
-    }
-
+    if (msg.length === 2)
+      return ($1 = new OffscreenCanvas(($0 = msg[1]).width, $0.height)).getContext("bitmaprenderer").transferFromImageBitmap($0),
+        $1.convertToBlob().then(r => $0.readAsDataURL(r)),
+        ($0 = new FileReader).onload = () => downloads.download({ filename, url: $0.result });
     let target = { tabId: tab.id };
     let dpr = msg[7];
     let x = msg[3];
@@ -44,7 +36,7 @@ onunhandledrejection = e => e.preventDefault();
       let rect = frameRects.find(v => v.width > width + 127 || v.height > height + 127);
       rect && (x += rect.x, y += rect.y);
     }
-    _debugger.attach(target, "1.3")
+    _debugger.attach(target, "1.3");
     _debugger.sendCommand(target, "Page.captureScreenshot", {
       captureBeyondViewport: !0,
       clip: {
@@ -57,7 +49,6 @@ onunhandledrejection = e => e.preventDefault();
     }), r => downloads.download({ filename, url: "data:image/png;base64," + r.data });
     return _debugger.detach(target);
   }
-
   action.onClicked.addListener(f);
   contextMenus.onClicked.addListener(f);
   commands.onCommand.addListener(f);
