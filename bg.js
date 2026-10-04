@@ -1,5 +1,4 @@
 onunhandledrejection = e => e.preventDefault();
-
 {
   let { action, commands, contextMenus, debugger: _debugger, downloads, runtime, scripting } = chrome;
   let f = (a, b) => scripting.executeScript({
